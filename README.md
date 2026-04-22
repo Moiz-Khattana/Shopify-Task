@@ -1,6 +1,7 @@
 # Curtain PDP – Shopify Theme Task
 ## Live Demo
 [https://ropstam-testing.myshopify.com/products/london-blind-linen]
+password: 1234
 
 ## What Was Built
 A custom Product Detail Page for curtains with dynamic pricing based on:
