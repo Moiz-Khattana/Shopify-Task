@@ -30,4 +30,5 @@ A custom Product Detail Page for curtains with dynamic pricing based on:
 1. assets/curtain-pdp.css: All custom styles
 2. assets/curtain-pdp.js: Dynamic pricing logic
 3. sections/main-product.liquid: Custom variant picker UI
-4. layout/theme.liquid: CSS/JS file includes
+4. snippets/buy-buttons.liquid: Button state control (disabled until Width + Drop selection, Buy Now redirects to checkout, Add to Cart adds selected variant to cart)
+5. layout/theme.liquid: CSS/JS file includes
