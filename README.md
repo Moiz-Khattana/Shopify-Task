@@ -23,7 +23,7 @@ A custom Product Detail Page for curtains with dynamic pricing based on:
 2. JavaScript reads the data-panels attribute on that option (e.g. 2)
 3. It builds a variant title string: "2 Panels / [selected drop]"
 4. It finds the matching Shopify variant and reads its price
-5. The price is displayed live — no page refresh needed
+5. The price is displayed live no page refresh needed
 
 ## Files Changed
 1. assets/curtain-pdp.css: All custom styles
