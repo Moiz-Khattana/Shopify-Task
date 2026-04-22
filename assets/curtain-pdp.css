@@ -1,0 +1,82 @@
+.curtain-fabric-panels-option {
+  display: none !important;
+}
+.curtain-pdp-wrapper {
+  margin-top: 20px;
+}
+.curtain-option-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.curtain-option-row label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.curtain-option-row select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1a1a1a;
+  background-color: #fff;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231a1a1a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  cursor: pointer;
+}
+.curtain-option-row select:focus {
+  outline: none;
+  border-color: #1a1a1a;
+}
+.curtain-price-display {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 20px 0 16px;
+  min-height: 36px;
+}
+
+.curtain-price-display.placeholder {
+  font-size: 14px;
+  font-weight: 400;
+  color: #717171;
+}
+.curtain-atc-btn {
+  width: 100%;
+  padding: 16px;
+  background-color: #1a1a1a;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  letter-spacing: 0.05em;
+}
+.curtain-atc-btn:hover:not(:disabled) {
+  background-color: #333;
+}
+.curtain-atc-btn:disabled {
+  background-color: #d1d1d1;
+  color: #717171;
+  cursor: not-allowed;
+}
+.curtain-error {
+  color: #cc0000;
+  font-size: 13px;
+  margin-top: 8px;
+  display: none;
+}
+@media (max-width: 749px) {
+  .curtain-price-display {
+    font-size: 20px;
+  }
+}

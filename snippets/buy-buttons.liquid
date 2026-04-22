@@ -1,0 +1,348 @@
+{% comment %}
+  Renders product buy-buttons.
+  Accepts:
+  - product: {Object} product object.
+  - block: {Object} passing the block information.
+  - product_form_id: {String} product form id.
+  - section_id: {String} id of section to which this snippet belongs.
+  - show_pickup_availability: {Boolean} for the pickup availability. If true the pickup availability is rendered, false - not rendered (optional).
+
+  Usage:
+  {% render 'buy-buttons', block: block, product: product, product_form_id: product_form_id, section_id: section.id, show_pickup_availability: true %}
+{% endcomment %}
+<div {{ block.shopify_attributes }}>
+  {%- if product != blank -%}
+    {%- liquid
+      assign gift_card_recipient_feature_active = false
+      if block.settings.show_gift_card_recipient and product.gift_card?
+        assign gift_card_recipient_feature_active = true
+      endif
+
+      assign show_dynamic_checkout = false
+      if block.settings.show_dynamic_checkout and gift_card_recipient_feature_active == false
+        assign show_dynamic_checkout = true
+      endif
+    -%}
+
+    <product-form
+      class="product-form"
+      data-hide-errors="{{ gift_card_recipient_feature_active }}"
+      data-section-id="{{ section.id }}"
+    >
+      <div class="product-form__error-message-wrapper" role="alert" hidden>
+        <span class="svg-wrapper">
+          {{- 'icon-error.svg' | inline_asset_content -}}
+        </span>
+        <span class="product-form__error-message"></span>
+      </div>
+
+      {%- form 'product',
+        product,
+        id: product_form_id,
+        class: 'form',
+        novalidate: 'novalidate',
+        data-type: 'add-to-cart-form'
+      -%}
+        <input
+          type="hidden"
+          name="id"
+          id="curtain-variant-id"
+          value="{{ product.selected_or_first_available_variant.id }}"
+          {% if product.selected_or_first_available_variant.available == false
+            or quantity_rule_soldout
+            or product.selected_or_first_available_variant == null
+          %}
+            disabled
+          {% endif %}
+          class="product-variant-id"
+        >
+
+        {%- if gift_card_recipient_feature_active -%}
+          {%- render 'gift-card-recipient-form', product: product, form: form, section: section -%}
+        {%- endif -%}
+
+        <div class="product-form__buttons">
+          {%- liquid
+            assign check_against_inventory = true
+            if product.selected_or_first_available_variant.inventory_management != 'shopify' or product.selected_or_first_available_variant.inventory_policy == 'continue'
+              assign check_against_inventory = false
+            endif
+            if product.selected_or_first_available_variant.quantity_rule.min > product.selected_or_first_available_variant.inventory_quantity and check_against_inventory
+              assign quantity_rule_soldout = true
+            endif
+          -%}
+          <button
+            id="curtain-atc-btn"
+            type="submit"
+            name="add"
+            class="product-form__submit button button--full-width {% if show_dynamic_checkout %}button--secondary{% else %}button--primary{% endif %}"
+            {% if product.selected_or_first_available_variant.available == false
+              or quantity_rule_soldout
+              or product.selected_or_first_available_variant == null
+            %}
+              disabled
+            {% endif %}
+          >
+            <span>
+              {%- if product.selected_or_first_available_variant == null -%}
+                {{ 'products.product.unavailable' | t }}
+              {%- elsif product.selected_or_first_available_variant.available == false or quantity_rule_soldout -%}
+                {{ 'products.product.sold_out' | t }}
+              {%- else -%}
+                {{ 'products.product.add_to_cart' | t }}
+              {%- endif -%}
+            </span>
+            {%- render 'loading-spinner' -%}
+          </button>
+          {%- if show_dynamic_checkout -%}
+            {{ form | payment_button }}
+          {%- endif -%}
+        </div>
+      {%- endform -%}
+    </product-form>
+  {%- else -%}
+    <div class="product-form">
+      <div class="product-form__buttons form">
+        <button
+          type="submit"
+          name="add"
+          class="product-form__submit button button--full-width button--primary"
+          disabled
+        >
+          {{ 'products.product.sold_out' | t }}
+        </button>
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- if show_pickup_availability -%}
+    {{ 'component-pickup-availability.css' | asset_url | stylesheet_tag }}
+
+    {%- assign pick_up_availabilities = product.selected_or_first_available_variant.store_availabilities
+      | where: 'pick_up_enabled', true
+    -%}
+
+    <pickup-availability
+      class="product__pickup-availabilities quick-add-hidden"
+      {% if product.selected_or_first_available_variant.available and pick_up_availabilities.size > 0 %}
+        available
+      {% endif %}
+      data-root-url="{{ routes.root_url }}"
+      data-variant-id="{{ product.selected_or_first_available_variant.id }}"
+      data-has-only-default-variant="{{ product.has_only_default_variant }}"
+      data-product-page-color-scheme="gradient color-{{ section.settings.color_scheme }}"
+    >
+      <template>
+        <pickup-availability-preview class="pickup-availability-preview">
+          <span class="svg-wrapper">
+            {{- 'icon-unavailable.svg' | inline_asset_content -}}
+          </span>
+          <div class="pickup-availability-info">
+            <p class="caption-large">{{ 'products.product.pickup_availability.unavailable' | t }}</p>
+            <button class="pickup-availability-button link link--text underlined-link">
+              {{ 'products.product.pickup_availability.refresh' | t }}
+            </button>
+          </div>
+        </pickup-availability-preview>
+      </template>
+    </pickup-availability>
+
+    <script src="{{ 'pickup-availability.js' | asset_url }}" defer="defer"></script>
+  {%- endif -%}
+</div>
+<script>
+(function () {
+
+  /* ─────────────────────────────────────────────
+     REPLACE FULL CART DRAWER (CRITICAL FIX)
+  ───────────────────────────────────────────── */
+  function replaceCartDrawer(html) {
+    var parser = new DOMParser();
+    var doc = parser.parseFromString(html, 'text/html');
+
+    var newDrawer = doc.querySelector('cart-drawer');
+    var oldDrawer = document.querySelector('cart-drawer');
+
+    if (newDrawer && oldDrawer) {
+      oldDrawer.replaceWith(newDrawer);
+    }
+  }
+
+  /* ─────────────────────────────────────────────
+     OPEN CART DRAWER
+  ───────────────────────────────────────────── */
+  function openCartDrawer() {
+    var cartDrawer = document.querySelector('cart-drawer');
+
+    if (cartDrawer && typeof cartDrawer.open === 'function') {
+      cartDrawer.open();
+      return;
+    }
+
+    var drawerEl = document.querySelector('#CartDrawer');
+    if (drawerEl) {
+      drawerEl.removeAttribute('hidden');
+      drawerEl.setAttribute('open', '');
+      drawerEl.classList.add('active', 'is-open');
+    }
+
+    var overlay = document.querySelector('.drawer__overlay, .cart-drawer__overlay');
+    if (overlay) overlay.removeAttribute('hidden');
+  }
+
+  /* ─────────────────────────────────────────────
+     ADD TO CART (FULLY RELIABLE)
+  ───────────────────────────────────────────── */
+  function addToCartAndOpen() {
+    var variantInput = document.getElementById('curtain-variant-id');
+    if (!variantInput || variantInput.disabled) return Promise.resolve();
+
+    var variantId = parseInt(variantInput.value, 10);
+
+    var qtyInput = document.querySelector('[data-type="add-to-cart-form"] [name="quantity"]');
+    var quantity = qtyInput ? parseInt(qtyInput.value, 10) || 1 : 1;
+
+    return fetch('/cart/add.js', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        id: variantId,
+        quantity: quantity
+      })
+    })
+    .then(function (res) {
+      if (!res.ok) return res.json().then(e => { throw new Error(e.description); });
+      return res.json();
+    })
+
+    // ensure Shopify updates cart
+    .then(function () {
+      return fetch('/cart.js', { cache: 'no-store' });
+    })
+
+    // fetch FULL drawer (not partial)
+    .then(function () {
+      return fetch('/?sections=cart-drawer&_=' + Date.now());
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+
+      var html = data['cart-drawer'];
+      if (!html) {
+        console.warn('No cart drawer HTML returned');
+        return;
+      }
+
+      // 🔥 THIS is the fix
+      replaceCartDrawer(html);
+
+      openCartDrawer();
+    })
+    .catch(function (err) {
+      console.error('Cart error:', err);
+    });
+  }
+
+  /* ─────────────────────────────────────────────
+     BUY NOW → DIRECT CHECKOUT
+  ───────────────────────────────────────────── */
+  function buyNowToCheckout() {
+    var variantInput = document.getElementById('curtain-variant-id');
+    if (!variantInput || variantInput.disabled) return;
+
+    var variantId = parseInt(variantInput.value, 10);
+
+    var qtyInput = document.querySelector('[data-type="add-to-cart-form"] [name="quantity"]');
+    var quantity = qtyInput ? parseInt(qtyInput.value, 10) || 1 : 1;
+
+    fetch('/cart/clear.js', { method: 'POST' })
+      .then(function () {
+        window.location.href = '/cart/' + variantId + ':' + quantity;
+      });
+  }
+
+  /* ─────────────────────────────────────────────
+     INIT ADD TO CART
+  ───────────────────────────────────────────── */
+  function initATC() {
+    var productFormEl = document.querySelector('product-form[data-section-id]');
+    if (!productFormEl) return;
+
+    var form = productFormEl.querySelector('[data-type="add-to-cart-form"]');
+    if (!form) return;
+
+    var btn = document.getElementById('curtain-atc-btn');
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      if (btn) {
+        btn.classList.add('loading');
+        btn.setAttribute('aria-busy', 'true');
+        btn.disabled = true;
+      }
+
+      addToCartAndOpen().finally(function () {
+        if (btn) {
+          btn.classList.remove('loading');
+          btn.removeAttribute('aria-busy');
+          btn.disabled = false;
+        }
+      });
+
+    }, true);
+  }
+
+  /* ─────────────────────────────────────────────
+     INIT BUY NOW
+  ───────────────────────────────────────────── */
+  function initBuyNow() {
+    var wrapper = document.querySelector('.product-form__buttons');
+    if (!wrapper) return;
+
+    function bind() {
+      wrapper.querySelectorAll(
+        '.shopify-payment-button__button, [data-shopify-buttoncontainer] button, [data-testid="Checkout-button"]'
+      ).forEach(function (btn) {
+
+        if (btn.dataset.bound) return;
+        btn.dataset.bound = 'true';
+
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+
+          btn.disabled = true;
+          buyNowToCheckout();
+
+        }, true);
+      });
+    }
+
+    new MutationObserver(bind).observe(wrapper, {
+      childList: true,
+      subtree: true
+    });
+
+    bind();
+  }
+
+  /* ─────────────────────────────────────────────
+     BOOT
+  ───────────────────────────────────────────── */
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function () {
+      initATC();
+      initBuyNow();
+    });
+  } else {
+    initATC();
+    initBuyNow();
+  }
+
+})();
+</script>
