@@ -8,7 +8,7 @@ password: 1234
 A custom Product Detail Page for curtains with dynamic pricing based on:
 1. User-selected Width (sourced from product metafield)
 2. User-selected Drop (sourced from product variants)
-3. Fabric Panels count (calculated silently in the background — never shown to user)
+3. Fabric Panels count (calculated silently in the background never shown to user)
 
 ## Setup Instructions
 1. Create a Shopify development store with Dawn theme
