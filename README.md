@@ -14,8 +14,7 @@ A custom Product Detail Page for curtains with dynamic pricing based on:
 1. Create a Shopify development store with Dawn theme
 2. Create a product with two variant options: Fabric Panels and Drop
 3. Set prices for every Fabric Panels / Drop combination
-4. Go to Settings → Custom data → Products and add a JSON metafield:
-   Namespace: custom.width_options
+4. Go to Settings then go to custom data then go to products and add a JSON metafield with Namespace: custom.width_options
 5. Add the JSON width-to-panel mapping to the product metafield
 6. Upload the theme files from this repo via the Shopify code editor
 
